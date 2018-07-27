@@ -36,5 +36,22 @@ export default {
 			id: "stu3203",
 			name: ""
 		}
+	],
+	hostels: [
+		{
+			id: "a",
+			maxCapacity: 100,
+			vacant: [12, 45, 67, 98, 10, 34]
+		},
+		{
+			id: "b",
+			maxCapacity: 112,
+			vacant: [32, 65, 86, 26]
+		},
+		{
+			id: "c",
+			maxCapacity: 75,
+			vacant: [59, 11, 10, 1, 35]
+		}
 	]
 };

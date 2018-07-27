@@ -6,7 +6,8 @@ import {
 	StudentLoginPage,
 	Dashboard,
 	StudentDashboard,
-	StaffDashboard
+	StaffDashboard,
+	BookRoomPage
 } from "./pages";
 
 class App extends Component {
@@ -47,10 +48,9 @@ class App extends Component {
 					setAppState={this.setAppState}
 					appState={this.state}
 				/>
-				<Dashboard path="dashboard">
-					<StudentDashboard path="student" />
-					<StaffDashboard path="staff" />
-				</Dashboard>
+				<StudentDashboard path="dashboard/student" />
+				<StaffDashboard path="dashboard/staff" />
+				<BookRoomPage path="dashboard/student/book" />
 			</Router>
 		);
 	}
