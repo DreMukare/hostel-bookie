@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { navigate } from "@reach/router";
-import { Input } from "../../components";
 import { fakepi } from "../../utils";
+import LoginPage from "./LoginPage";
 
-class LoginPage extends Component {
+class StaffLoginPage extends Component {
 	state = {
 		formData: {
 			staffId: "",
@@ -12,49 +12,41 @@ class LoginPage extends Component {
 		invalidFormData: false
 	};
 
-	handleChange = event => {
-		const fieldName = event.target.name;
-		const input = event.target.value;
-		const currentFormData = this.state.formData;
-		this.setState({ formData: { ...currentFormData, [fieldName]: input } });
+	setFormState = state => {
+		this.setState(state);
 	};
 
 	handleSubmit = event => {
 		event.preventDefault();
 		const { formData } = this.state;
-		if (fakepi.login(formData)) {
-			sessionStorage.setItem("logged-in-user-id", formData.staffId);
-			sessionStorage.setItem(`user-${formData.staffId}`, "staff-session-key");
-			navigate("/dashboard/staff");
-			this.props.setAppState({ user: { type: "staff", loggedIn: true } });
-		} else {
-			this.setState({ invalidFormData: true });
-		}
+		fakepi
+			.login(formData)
+			.then(response => {
+				if (response.ok) {
+					return response.json;
+				}
+				this.setState({ invalidFormData: true });
+			})
+			.then(json => {
+				if (Boolean(json)) {
+					sessionStorage.setItem("logged-in-user-id", json.id);
+					sessionStorage.setItem(`user-${json.id}`, json.sessionKey);
+					navigate("/dashboard/staff");
+					this.props.setAppState({ user: { type: "staff", loggedIn: true } });
+				}
+			});
 	};
 
 	render() {
 		return (
-			<form>
-				<div className="form-group">
-					<label htmlFor="staffId">Staff ID</label>
-					<Input name="staffId" type="text" onChange={this.handleChange} />
-				</div>
-				<div className="form-group">
-					<label htmlFor="password">Password</label>
-					<Input name="password" type="password" onChange={this.handleChange} />
-				</div>
-				{this.state.invalidFormData && (
-					<p style={{ color: "red" }}>Invalid staff ID or Password</p>
-				)}
-				<Input
-					name="submit"
-					type="submit"
-					onClick={this.handleSubmit}
-					value="Login"
-				/>
-			</form>
+			<LoginPage
+				userType="staff"
+				handleSubmit={this.handleSubmit}
+				formState={this.state}
+				setFormState={this.setFormState}
+			/>
 		);
 	}
 }
 
-export default LoginPage;
+export default StaffLoginPage;

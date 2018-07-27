@@ -1,37 +1,41 @@
 import caesar from "./caesar";
 import normalize from "./normalize";
+import Database from "./database";
 
 const privateCipherOffset = 3;
-const loginDB = [
-	{
-		id: "staff123",
-		password: caesar("Pass123", privateCipherOffset)
-	},
-	{
-		id: "studentId123",
-		password: caesar("123Pass", privateCipherOffset)
-	}
-];
 
-const fakeapi = {
-	login: loginData => {
-		const normalizedloginDB = normalize(loginDB);
+const db = new Database();
+
+const fakepi = {
+	login: async loginData => {
+		const { password } = loginData;
 		const id = loginData.staffId || loginData.studentId;
-		if (!Object.prototype.hasOwnProperty.call(normalizedloginDB, id)) {
-			return false;
+		const user = await db.table("login").get(id);
+		if (!user) {
+			return Promise.resolve({ ok: false });
 		}
-		const userFromDB = normalizedloginDB[id];
-		if (
-			id === userFromDB.id &&
-			Object.is(
-				loginData.password,
-				caesar(userFromDB.password, privateCipherOffset, true)
-			)
-		) {
-			return true;
+		const correctUser = Object.is(id, user.id);
+		const decryptedPass = caesar(
+			atob(user.password),
+			privateCipherOffset,
+			true
+		);
+		const correctPass = Object.is(password, decryptedPass);
+		if (correctUser && correctPass) {
+			const userType = id.startsWith("stu") ? "student" : "staff";
+			return Promise.resolve({
+				ok: true,
+				status: 200,
+				get json() {
+					return Promise.resolve({
+						id,
+						sessionKey: `${userType}-session-key`
+					});
+				}
+			});
 		}
-		return false;
+		return Promise.resolve({ ok: false });
 	}
 };
 
-export default fakeapi;
+export default fakepi;
